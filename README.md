@@ -4,7 +4,7 @@
 | Name | NEU ID | Email Address |
 | --- | --- | --- |
 | Shubhankar Dandekar| 001439467| dandekar.s@husky.neu.edu |
-| Vani Somashekar | UR NUID | ur husky id@husky.neu.edu|
+| Vani Somashekar | 001420871 | somashekar.v@husky.neu.edu|
 
 # To run locally for development
 ## Install MySql Server
