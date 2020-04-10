@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: api
+  labels:
+    app: backend
+    group: csye7374
+spec:
+  # modify replicas according to your case
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      serviceAccountName: backend
+      initContainers:
+        - name: check-elastic-service
+          image: busybox:1.28
+          command: ['sh', '-c',
+                    'until nslookup elasticsearch.api.svc.cluster.local; do echo waiting for elasticsearch; sleep 2; done;']
+      containers:
+      - name: f19-backend
+        image: placeholder
+        imagePullPolicy: Always
+        ports:
+          - { containerPort: 8080,  protocol: TCP }
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: user
+
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: password
+
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: host
+          - name: S3_BUCKET
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: bucket
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: credentials
+                key: AWS_SECRET_ACCESS_KEY
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "100m"
+          limits:
+            memory: "2048Mi"
+            cpu: "2"
+        readinessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 1
+          successThreshold: 1
+        livenessProbe:
+          httpGet:
+            path: /v1/health
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          timeoutSeconds: 2
+          failureThreshold: 1
+          successThreshold: 1
+      imagePullSecrets:
+        - name: mysecret

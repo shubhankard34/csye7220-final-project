@@ -1,0 +1,185 @@
+- name: Replace cert-email
+  replace:
+    dest: files/letsencrypt.yaml
+    regexp: 'CERT_EMAIL'
+    replace: '{{ cert_email }}'
+
+- name: Replace domain name in frontend-ingress
+  replace:
+    dest: files/frontend-ingress.yaml
+    regexp: 'DOMAIN_NAME'
+    replace: '{{ public_domain_name }}'
+
+- name: Replace domain name in back-end ingress
+  replace:
+    dest: files/backend-ingress.yaml
+    regexp: 'DOMAIN_NAME'
+    replace: '{{ public_domain_name }}'
+
+- name: Replace domain name in dashboard ingress
+  replace:
+    dest: files/dashboard-ingress.yaml
+    regexp: 'DOMAIN_NAME'
+    replace: '{{ public_domain_name }}'
+
+- name: Replace domain name in oauth2-proxy ingress
+  replace:
+    dest: files/oauth2-proxy-ingress.yaml
+    regexp: 'DOMAIN_NAME'
+    replace: '{{ public_domain_name }}'
+
+- name: Check for existing ingress-controller
+  k8s_facts:
+    api_version: v1
+    kind: Service
+    name: ingress-nginx-ingress-controller
+    namespace: default
+  register: ingress_service
+
+- name: Create certificates and key
+  shell: openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout key.pem -out cert.cert -subj "/CN={{ public_domain_name }}/O={{ public_domain_name }}"
+
+- name: Create secret
+  shell: "kubectl create secret tls my-cert --key key.pem  --cert cert.cert"
+
+- name: Install nginx-ingress-controller helm chart
+  shell: helm install --name ingress stable/nginx-ingress --set controller.defaultTLS.secret=my-cert
+  when: ingress_service.resources | length == 0
+
+- name: Add jetstack helm repo
+  shell: helm repo add jetstack https://charts.jetstack.io
+
+- name: Create a k8s namespace for cert-manager
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          certmanager.k8s.io/disable-validation: "true"
+        name: cert-manager
+      spec:
+        finalizers:
+        - kubernetes
+
+- name: Add cert-manager config 1
+  k8s:
+    src: files/crd/cert-man-config-1.yaml
+    wait: yes
+    wait_condition:
+      reason: InitialNamesAccepted
+      status: True
+      type: Established
+
+- name: Add cert-manager config 2
+  k8s:
+    src: files/crd/cert-man-config-2.yaml
+    wait: yes
+    wait_condition:
+      reason: InitialNamesAccepted
+      status: True
+      type: Established
+
+- name: Add cert-manager config 3
+  k8s:
+    src: files/crd/cert-man-config-3.yaml
+    wait: yes
+    wait_condition:
+      reason: InitialNamesAccepted
+      status: True
+      type: Established
+
+- name: Add cert-manager config 4
+  k8s:
+    src: files/crd/cert-man-config-4.yaml
+    wait: yes
+    wait_condition:
+      reason: InitialNamesAccepted
+      status: True
+      type: Established
+
+- name: Add cert-manager config 5
+  k8s:
+    src: files/crd/cert-man-config-5.yaml
+    wait: yes
+    wait_condition:
+      reason: InitialNamesAccepted
+      status: True
+      type: Established
+
+- name: Create ClusterIssuer resource
+  k8s:
+    src: files/letsencrypt.yaml
+
+- name: Check for existing cert-manager
+  k8s_facts:
+    api_version: v1
+    kind: Deployment
+    name: cert-manager
+    namespace: cert-manager
+  register: cert_man_installed
+
+- name: Install cert-manager chart
+  shell: helm install --name cert-manager --namespace cert-manager --version v0.8.1 jetstack/cert-manager \
+    --set ingressShim.defaultIssuerName=letsencrypt-prod \
+    --set ingressShim.defaultIssuerKind=ClusterIssuer
+  when: cert_man_installed.resources | length == 0
+
+
+
+- name: Check for existing ingress-controller
+  k8s_facts:
+    api_version: v1
+    kind: Service
+    name: ingress-nginx-ingress-controller
+    namespace: default
+  register: ingress_service
+
+- name: Set ingress controller url k8s_facts
+  set_fact:
+    ingress_elb: "{{ ingress_service.resources[0].status.loadBalancer.ingress[0].hostname }}"
+
+- name: List all hosted zones
+  ec2_elb_facts:
+    profile: "{{ profile }}"
+    region: us-east-1
+  register: elb_info
+
+- name: Set alias hosted zone id fact
+  set_fact:
+    alias_zone_id: "{{ elb_info | json_query(query) | join('')}}"
+  vars: 
+    query: "elbs[?canonical_hosted_zone_name=='{{ ingress_elb }}'].canonical_hosted_zone_name_id"
+
+- name: Add record set for ingress ingress_elb to domain
+  route53:
+      profile: "{{ profile }}"
+      state: present
+      zone: "{{ public_domain_name }}."
+      overwrite: yes
+      alias: yes
+      alias_hosted_zone_id: "{{ alias_zone_id }}"
+      record: "{{ public_domain_name }}"
+      type: A
+      value: "{{ ingress_elb }}"
+      wait: yes
+
+- name: Add record set for ingress ingress_elb dashboard domain
+  route53:
+      profile: "{{ profile }}"
+      state: present
+      zone: "{{ public_domain_name }}."
+      overwrite: yes
+      record: "dashboard.{{ public_domain_name }}"
+      type: CNAME
+      value: "{{ ingress_elb }}"
+      wait: yes
+
+- name: Add ingress rule for front-end
+  k8s:
+    src: files/frontend-ingress.yaml
+
+- name: Add ingress rule for back-end
+  k8s:
+    src: files/backend-ingress.yaml

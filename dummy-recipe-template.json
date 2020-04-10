@@ -1,0 +1,36 @@
+{
+    "userFirstName": "FirstName",
+    "userLastName": "LastName",
+    "cook_time_in_min": 30,
+    "prep_time_in_min": 30,
+    "total_time_in_min": 60,
+    "title": "recipe 1",
+    "cuisine": "some cuisine",
+    "servings": 3,
+    "ingredients": [
+      "ing1",
+      "ing2",
+      "ing3"
+    ],
+    "steps": [
+      {
+        "position": 1,
+        "items": "step one"
+      },
+      {
+        "position": 2,
+        "items": "step two"
+      },
+      {
+        "position": 3,
+        "items": "step three"
+      }
+    ],
+    "nutrition_information": {
+      "calories": 2000,
+      "cholesterol_in_mg": 10,
+      "sodium_in_mg": 12,
+      "carbohydrates_in_grams": 15,
+      "protein_in_grams": 40
+    }
+  }

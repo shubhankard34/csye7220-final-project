@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: 'http://oauth2-proxy.kube-system.svc.cluster.local:4180/oauth2/auth'
+    nginx.ingress.kubernetes.io/auth-signin: 'https://dashboard.DOMAIN_NAME/oauth2/start?rd=$escaped_request_uri'
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/secure-backends: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  labels:
+    app: dashboard
+  name: dashboard-ingress
+  namespace: kube-system
+spec:
+  rules:
+  - host: dashboard.DOMAIN_NAME
+    http:
+      paths:
+      - backend:
+          serviceName: dash-kubernetes-dashboard
+          servicePort: 443
+        path: /
+  tls:
+  - hosts:
+    - dashboard.DOMAIN_NAME
+    secretName: dashboard.DOMAIN_NAME
