@@ -7,11 +7,14 @@
   vars_files:
     - vars/main.yaml
   roles:
-  - role: setup-k8s-cluster
-    when: command == "start"
+    - role: setup-k8s-cluster
+      when: command == "start"
 
-  - role: delete-k8s-cluster
-    when: command == "delete"
+    - role: provision
+      when: command == "start"
+
+    - role: delete-k8s-cluster
+      when: command == "delete"
 
   # - role: helm
   #   when: command == "start"

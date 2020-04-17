@@ -1,13 +1,11 @@
 - name: Get VPC from Kubernetes Cluster
   ec2_vpc_net_facts:
-    profile: "{{ profile }}"
     filters:
       "tag:Name": "{{ cluster_name }}"
   register: kubernetes_vpc
 
 - name: Get default VPC
   ec2_vpc_net_facts:
-    profile: "{{ profile }}"
     filters:
       "isDefault": "true"
   register: default_vpc
@@ -15,7 +13,6 @@
 - name: Create VPC peering Connection
   ec2_vpc_peer:
     region: "{{ region }}"
-    profile: "{{ profile }}"
     vpc_id: "{{ default_vpc.vpcs[0].vpc_id }}"
     peer_vpc_id: "{{ kubernetes_vpc.vpcs[0].vpc_id }}"
     state: present
@@ -24,7 +21,6 @@
 - name: Accept VPC peering request
   ec2_vpc_peer:
     region: "{{ region }}"
-    profile: "{{ profile }}"
     peering_id: "{{ vpc_peer.peering_id }}"
     state: accept
   register: action_peer
@@ -32,14 +28,12 @@
 - name: Gather Kubernetes IGW
   ec2_vpc_igw_facts:
     region: "{{ region }}"
-    profile: "{{ profile }}"
     filters:
       "tag:Name": "{{ cluster_name }}"
   register: kubernetes_igw
 
 - name: Get Kubernetes VPC route table
   ec2_vpc_route_table_facts:
-    profile: "{{ profile }}"
     region: "{{ region }}"
     filters:
       "route.gateway-id": "{{ kubernetes_igw.internet_gateways[0].internet_gateway_id }}"
@@ -49,7 +43,6 @@
 
 - name: Get default VPC route table
   ec2_vpc_route_table_facts:
-    profile: "{{ profile }}"
     region: "{{ region }}"
     filters:
       "association.main": "true"
@@ -60,7 +53,6 @@
   ec2_vpc_route_table:
     vpc_id: "{{ kubernetes_vpc.vpcs[0].vpc_id }}"
     region: "{{ region }}"
-    profile: "{{ profile }}"
     route_table_id: "{{ kubernetes_vpc_route_table.route_tables[0].associations[0].route_table_id }}"
     routes:
       - dest: "{{ default_vpc.vpcs[0].cidr_block }}"
@@ -73,7 +65,6 @@
   ec2_vpc_route_table:
     vpc_id: "{{ default_vpc.vpcs[0].vpc_id }}"
     region: "{{ region }}"
-    profile: "{{ profile }}"
     route_table_id: "{{ default_vpc_route_table.route_tables[0].associations[0].route_table_id }}"
     routes:
       - dest: "{{ kubernetes_vpc.vpcs[0].cidr_block }}"
@@ -85,7 +76,6 @@
     name: rds_security_group
     description: security group for RDS
     vpc_id: "{{ default_vpc.vpcs[0].vpc_id }}"
-    profile: "{{ profile }}"
     region: "{{ region }}"
     rules:
       - proto: tcp
@@ -103,7 +93,6 @@
 - name: Create RDS
   rds:
     command: create
-    profile: "{{ profile }}"
     region: "{{ region }}"
     instance_name: mysql-database
     db_engine: MySQL

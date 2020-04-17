@@ -1,13 +1,11 @@
 - name: Get VPC from Kubernetes Cluster
   ec2_vpc_net_facts:
-    profile: "{{ profile }}"
     filters:
       "tag:Name": "{{ cluster_name }}"
   register: kubernetes_vpc
 
 - name: Get default VPC
   ec2_vpc_net_facts:
-    profile: "{{ profile }}"
     filters:
       "isDefault": "true"
   register: default_vpc
@@ -15,7 +13,6 @@
 - name: Get VPC peering connection
   ec2_vpc_peering_facts:
     region: "{{ region }}"
-    profile: "{{ profile }}"
     filters:
       requester-vpc-info.vpc-id: "{{ default_vpc.vpcs[0].vpc_id }}"
       accepter-vpc-info.vpc-id: "{{ kubernetes_vpc.vpcs[0].vpc_id }}"
@@ -24,13 +21,11 @@
 - name: delete VPC peering connection
   ec2_vpc_peer:
     region: "{{ region }}"
-    profile: "{{ profile }}"
     peering_id: "{{ vpc_peering_connection.result[0].vpc_peering_connection_id }}"
     state: absent
 
 - name: Get default VPC route table
   ec2_vpc_route_table_facts:
-    profile: "{{ profile }}"
     region: "{{ region }}"
     filters:
       "association.main": "true"
@@ -41,7 +36,6 @@
   ec2_vpc_route_table:
     vpc_id: "{{ default_vpc.vpcs[0].vpc_id }}"
     region: "{{ region }}"
-    profile: "{{ profile }}"
     route_table_id: "{{ default_vpc_route_table.route_tables[0].associations[0].route_table_id }}"
     routes:
       - dest: "{{ default_vpc.vpcs[0].cidr_block }}"

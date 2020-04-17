@@ -1,0 +1,2 @@
+- name: Running backend deployment script
+  shell: cd .. && cd recipe-backend/deploy && ./deploy-backend.sh

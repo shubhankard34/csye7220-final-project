@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
-    "prom-client": "^11.5.3"
+    "prom-client": "^11.5.3",
+    "request": "^2.88.2"
   }
 }

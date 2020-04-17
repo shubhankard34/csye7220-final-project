@@ -16,5 +16,5 @@ ENTRYPOINT java -jar \
     -Dspring.datasource.url=${MYSQL_HOST} \
     -Dspring.datasource.username=${MYSQL_USER} \
     -Dspring.datasource.password=${MYSQL_PASSWORD} \
-    -Dserver.port=8080
+    -Dserver.port=8080 \
     /recipe-demo.jar

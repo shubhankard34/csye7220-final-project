@@ -5,7 +5,7 @@ metadata:
   namespace: api
   labels:
     app: backend
-    group: csye7374
+    group: csye7220
 spec:
   # modify replicas according to your case
   replicas: 1
@@ -18,14 +18,9 @@ spec:
         app: backend
     spec:
       serviceAccountName: backend
-      initContainers:
-        - name: check-elastic-service
-          image: busybox:1.28
-          command: ['sh', '-c',
-                    'until nslookup elasticsearch.api.svc.cluster.local; do echo waiting for elasticsearch; sleep 2; done;']
       containers:
       - name: f19-backend
-        image: placeholder
+        image: shubhankard34/recipe-backend:latest
         imagePullPolicy: Always
         ports:
           - { containerPort: 8080,  protocol: TCP }
@@ -47,21 +42,6 @@ spec:
               secretKeyRef:
                 name: credentials
                 key: host
-          - name: S3_BUCKET
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: bucket
-          - name: AWS_ACCESS_KEY_ID
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: AWS_ACCESS_KEY_ID
-          - name: AWS_SECRET_ACCESS_KEY
-            valueFrom:
-              secretKeyRef:
-                name: credentials
-                key: AWS_SECRET_ACCESS_KEY
         resources:
           requests:
             memory: "1024Mi"
@@ -87,5 +67,3 @@ spec:
           timeoutSeconds: 2
           failureThreshold: 1
           successThreshold: 1
-      imagePullSecrets:
-        - name: mysecret

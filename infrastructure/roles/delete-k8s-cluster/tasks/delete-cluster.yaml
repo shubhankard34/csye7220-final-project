@@ -3,4 +3,4 @@
 
 - name: Deleting Kubernetes Cluster
   shell: |
-    AWS_PROFILE={{ profile }} kops delete cluster {{ cluster_name }} --state={{ kops_state_store }} --yes
+    kops delete cluster {{ cluster_name }} --state={{ kops_state_store }} --yes
