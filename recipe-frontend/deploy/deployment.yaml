@@ -5,7 +5,7 @@ metadata:
   namespace: ui
   labels:
     app: frontend
-    group: csye7374
+    group: csye7220
 spec:
   # modify replicas according to your case
   replicas: 1
@@ -18,14 +18,9 @@ spec:
         app: frontend
     spec:
       serviceAccountName: frontend
-      initContainers:
-        - name: check-elastic-service
-          image: busybox:1.28
-          command: ['sh', '-c',
-                    'until nslookup backend.api.svc.cluster.local; do echo waiting for backend; sleep 2; done;']
       containers:
-      - name: f19-frontend
-        image: placeholder
+      - name: recipe-frontend
+        image: shubhankard34/recipe-frontend:latest
         imagePullPolicy: Always
         ports:
           - { containerPort: 8080,  protocol: TCP }
@@ -54,5 +49,3 @@ spec:
           timeoutSeconds: 2
           failureThreshold: 1
           successThreshold: 1
-      imagePullSecrets:
-        - name: mysecret

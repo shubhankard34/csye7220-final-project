@@ -1,0 +1,5 @@
+- name: Deploying Backend
+  import_tasks: backend.yaml
+
+- name: Deploying Front end
+  import_tasks: frontend.yaml

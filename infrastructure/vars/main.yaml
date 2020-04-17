@@ -15,7 +15,7 @@ availability_zones: "us-east-1a"
 bastion: true
 dns: "private"
 cloud: "aws"
-profile: "dev"
+profile: ""
 k8s_version: "1.13.0"
 ssh_path: ""
 region: "us-east-1"

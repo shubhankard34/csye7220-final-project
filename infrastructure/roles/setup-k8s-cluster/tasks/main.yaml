@@ -4,8 +4,8 @@
 - name: Create Cluster Tasks
   import_tasks: create-cluster.yaml
 
-- name: Security Group tasks
-  import_tasks: change-security-group-rules.yaml
+# - name: Security Group tasks
+#   import_tasks: change-security-group-rules.yaml
 
 - name: Setup and Create RDS
   import_tasks: setup-rds.yaml
