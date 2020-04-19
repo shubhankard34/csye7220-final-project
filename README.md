@@ -70,3 +70,34 @@ mysql > exit
 6. If you open it for the first time, the webpage would be empty since there are no recipes posted.
 7. Open POSTMAN and make a post request to http://localhost:8080/v1/recipe and include [this dummy template json](./dummy-recipe-template.json) in the body
 8. Now, you should be able to see a recipe at http://localhost:8080
+
+# To run on kubernetes cluster on AWS
+
+## Requirements
+
+1. AWS account
+2. `aws-cli`
+3. `kops`
+4. `ansible`
+5. `helm`
+
+## Start Cluster and app using the ansible-playbook
+
+1. Create an s3 bucket on AWS named `<your-bucket-name>`
+2. Open terminal and navigate to `infrastructure` directory
+3. Run the following command to start the kubernetes server on AWS
+    ```xml
+    ansible-playbook main.yaml --extra-vars "command=start cluster_name=k8s.local kops_state_store=s3://<your-bucket-name>"
+    ```
+4. Open AWS console > EC2 > LoadBalancers
+5. Note the URLs for the LoadBalancer created for both your Apps
+6. Open these URLs in your browser
+
+## Delete the created cluster and free your resources when done using
+
+1. Open terminal and navigate to `infrastructure` directory
+2. Run the following command to delete the kubernetes server on AWS
+    ```xml
+    ansible-playbook main.yaml --extra-vars "command=delete cluster_name=k8s.local kops_state_store=s3://<your-bucket-name>"
+    ```
+
