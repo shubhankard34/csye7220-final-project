@@ -1,2 +1,5 @@
-- name: Running frontend deployment script
+- name: Running frontend deployment script for list app
   shell: cd .. && cd recipe-frontend/deploy && ./deploy-frontend.sh
+
+- name: Running frontend deployment script for post app
+  shell: cd .. && cd post-recipe/deploy && ./deploy-frontend.sh

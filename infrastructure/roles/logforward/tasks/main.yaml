@@ -1,2 +1,0 @@
-- name: Install Fluentd
-  import_tasks: install-fluentd.yaml
