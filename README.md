@@ -81,6 +81,8 @@ mysql > exit
 4. `ansible`
 5. `helm`
 
+NOTE: ansible requires certain python dependencies eg., kubernetes, oc, boto, etc. so you might need to install those using `pip install <dependecy>`. 
+
 ## Start Cluster and app using the ansible-playbook
 
 1. Create an s3 bucket on AWS named `<your-bucket-name>`
