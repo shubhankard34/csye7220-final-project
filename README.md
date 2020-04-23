@@ -75,13 +75,29 @@ mysql > exit
 
 ## Requirements
 
-1. AWS account
-2. `aws-cli`
-3. `kops`
-4. `ansible`
-5. `helm`
+1. [AWS account](https://aws.amazon.com)
+2. [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+3. [kops](https://kops.sigs.k8s.io/getting_started/install/)
+4. [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html)
+5. [helm(version 2.16.6)](https://github.com/helm/helm)
+6. [python-pip](https://pip.pypa.io/en/stable/installing/)
+7. [boto3](https://pypi.org/project/boto3/)
+8. [boto](https://pypi.org/project/boto/)
+9. [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+10. [openshift](https://pypi.org/project/openshift/)
 
-NOTE: ansible requires certain python dependencies eg., kubernetes, oc, boto, etc. so you might need to install those using `pip install <dependecy>`. 
+### NOTE
+
+This project was developed on an ubuntu 18.04 system. It supports every major OS, provided the above requirements are fulfilled. Though it is recommended to use a UNIX based OS (especially ubuntu 18.04).
+
+In order to simplify the process of meeting the requirements, we have a `install-dependencies.sh` bash script to install all the depending tools. Follow the steps below:
+
+1. Create an s3 bucket on AWS named `<your-bucket-name>`
+2. Navigate to the root of this project in your terminal
+3. Run `./install-dependencies.sh`
+4. It will prompt you to enter the name of your s3 bucket `<your-bucket-name>`(that you have to create for `kops` to work. This is mentioned in the 1st step)
+5. The last step in the script is AWS configuration, hence, you will be prompted to enter your `AWS access key`, `AWS access key ID`, `default region` (recommended: 'us-east-1') and `default output`
+6. If you have followed this, you can skip to step 2 in the next section
 
 ## Start Cluster and app using the ansible-playbook
 
@@ -91,9 +107,18 @@ NOTE: ansible requires certain python dependencies eg., kubernetes, oc, boto, et
     ```xml
     ansible-playbook main.yaml --extra-vars "command=start cluster_name=k8s.local kops_state_store=s3://<your-bucket-name>"
     ```
-4. Open AWS console > EC2 > LoadBalancers
-5. Note the URLs for the LoadBalancer created for both your Apps
-6. Open these URLs in your browser
+4. Run the following command to note down the password for your grafana dashboard
+    ```xml
+    kubectl -n grafana get secret grafana -o json
+    ```
+    Note that this is a base64 encoded string, use any tool to decode it and note it down
+5. Run the following command to view the external IPS of your 3 apps - frontend, frontend-post and grafana
+   ```xml
+   kubectl get svc --all-namespaces
+   ```
+6. Note the URLs for the LoadBalancer created for all three of your Apps
+7. Open these URLs in your browser
+8. For the grafana dashboard, use the username as `admin` and for password use the decoded string from step 4
 
 ## Delete the created cluster and free your resources when done using
 
